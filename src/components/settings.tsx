@@ -1,8 +1,8 @@
 import * as React from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilStateLoadable, useRecoilValue } from "recoil";
 import { Box, Button, Center, Heading } from "@chakra-ui/react";
 
-import { Timer, timerIds, timers } from "../data/timer-data";
+import { Roles, timerIds, timers } from "../data/timer-data";
 import { TimerSettingsForm } from "./timer-settings-form";
 
 // This is the settings section, where I can add new timers and edit existing ones
@@ -10,12 +10,12 @@ import { TimerSettingsForm } from "./timer-settings-form";
 
 export function Settings() {
   // You need to provide your own id to create a new atom
-  const newTimerId = crypto.randomUUID();
-
+  // note: do not let your id change every render!!
+  const newTimerId = React.useRef(crypto.randomUUID());
   // then we can use the id to access the new timer,
   // which is created with the default values we set
   // Here I'm using the `timers` selector I created:
-  const [_timer, setTimer] = useRecoilState(timers(newTimerId));
+  const [_timer, setTimer] = useRecoilStateLoadable(timers(newTimerId.current));
 
   // I could also have used timerFamily directly here, which would look like this:
   // const [_timer, setTimer] = useRecoilState(timerFamily(newTimerId));
@@ -27,27 +27,29 @@ export function Settings() {
   // (note I'm using the read-only hook here - but this still subscribes to the atom.
   // I have an idea about not subscribing by building the default values into the selector
   // but it's not important for the talk)
-  // const lastTimer = useRecoilValue(asyncTimerSelector(ids[ids.length - 1]));
+  const lastTimer = useRecoilValue(timers(ids[ids.length - 1]));
 
   // The button runs setTimer with my initial values
   // it updates the new timer atom and adds the new timer to the list of timers
   // (which then renders the timer settings form)
   const addTimer = () => {
-    const newTimer: Timer = {
-      id: newTimerId,
+    const newTimer = {
+      id: newTimerId.current,
       goal: "",
-      role: "work",
-      minutes: 25,
-      // ...(ids.length && lastTimer.role === "work"
-      //   ? {
-      //       role: "rest",
-      //       minutes: 5,
-      //     }
-      //   : {
-      //       role: "work",
-      //       minutes: 25,
-      //     }),
+      // role: "work" as Roles,
+      // minutes: 25,
+      image: undefined,
+      ...(ids.length && lastTimer.role === "work"
+        ? {
+            role: "rest" as Roles,
+            minutes: 5,
+          }
+        : {
+            role: "work" as Roles,
+            minutes: 25,
+          }),
     };
+    newTimerId.current = crypto.randomUUID();
     setTimer(newTimer);
   };
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilStateLoadable } from "recoil";
 import {
   Flex,
   Heading,
@@ -16,26 +16,30 @@ import { timers, Roles } from "../data/timer-data";
 
 export function TimerSettingsForm({ id }: { id: string }) {
   // Each of the timers are individually subscribed to their own atoms:
-  const [timer, setTimer] = useRecoilState(timers(id));
+  const [timer, setTimer] = useRecoilStateLoadable(timers(id));
 
+  // if (timer.state === "loading" || timer.state === "hasError") {
+  //   console.log(timer);
+  //   return null;
+  // }
   // I'm using the timer atom to store the form state.
   return (
     <Flex
       flexDirection={"column"}
       rowGap={6}
       mb={12}
-      color={timer.isRunning ? "gray.400" : "gray.600"}
+      color={timer.contents.isRunning ? "gray.400" : "gray.600"}
     >
       <Heading size={"md"}>
-        {timer.role === "work" ? "Work session" : "Break time"}
+        {timer.contents.role === "work" ? "Work session" : "Break time"}
       </Heading>
 
       <label>
         Role
         <Select
           placeholder="Select role"
-          value={timer.role}
-          disabled={timer.isRunning}
+          value={timer.contents.role}
+          disabled={timer.contents.isRunning}
           onChange={(e) => {
             setTimer((prev) => ({ ...prev, role: e.target.value as Roles }));
           }}
@@ -45,27 +49,27 @@ export function TimerSettingsForm({ id }: { id: string }) {
         </Select>
       </label>
 
-      {timer.role === "work" && (
+      {timer.contents.role === "work" && (
         <label>
           Goal
           <Input
-            value={timer.goal}
+            value={timer.contents.goal}
             onChange={(e) =>
               setTimer((prev) => ({ ...prev, goal: e.target.value }))
             }
-            disabled={timer.isRunning}
+            disabled={timer.contents.isRunning}
           />
         </label>
       )}
       <label>
         Minutes
         <NumberInput
-          value={timer.minutes}
+          value={timer.contents.minutes}
           onChange={(string, number) =>
             setTimer((prev) => ({ ...prev, minutes: number }))
           }
         >
-          <NumberInputField disabled={timer.isRunning} />
+          <NumberInputField disabled={timer.contents.isRunning} />
           <NumberInputStepper>
             <NumberIncrementStepper />
             <NumberDecrementStepper />

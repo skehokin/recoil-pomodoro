@@ -1,6 +1,8 @@
 import { atom, atomFamily, DefaultValue, selectorFamily } from "recoil";
 import { memoize } from "lodash";
 import dayjs from "dayjs";
+import { fetchFruitPicture, fetchFruitUrl } from "./fruit-requests";
+import tomatoTop from "../assets/tomato-top.png?url";
 
 export type Roles = "work" | "rest";
 
@@ -14,7 +16,7 @@ export interface Timer {
   currentMinutes?: number;
   alarmOn?: boolean;
   imageUrl?: string;
-  image?: Blob;
+  image?: string;
 }
 
 interface CreateTimerParams {
@@ -87,17 +89,29 @@ export const timerIds = atom<string[]>({
   default: [],
 });
 
-// After that, I need to use some mechanism to update the list of ids when the timerFamily is updated.
-// I could use an atomEffect, but in this case I went with a selectorFamily.
-// This selectorFamily can both read and write to the atomFamily.
+const imagesQuery = selectorFamily({
+  key: `imagesQuery`,
+  get: () => async () => {
+    const fruitUrl = await fetchFruitUrl();
+    const imageBlob = await fetchFruitPicture(fruitUrl);
+
+    console.log(imageBlob);
+    console.log(imageBlob && URL.createObjectURL(imageBlob));
+
+    return imageBlob ? URL.createObjectURL(imageBlob) : tomatoTop;
+  },
+});
+
 export const timers = selectorFamily({
   key: "timer-access",
   get:
     (id: string) =>
     ({ get }) => {
       const atom = get(timerFamily(id));
-      return atom;
+      const image = get(imagesQuery(id));
+      return { ...atom, image: image };
     },
+  // set cannot be async, it turns out
   set:
     (id) =>
     ({ set, reset }, newTimerValue) => {

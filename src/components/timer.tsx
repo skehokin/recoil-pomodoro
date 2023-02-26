@@ -1,5 +1,9 @@
 import * as React from "react";
-import { useRecoilState, useResetRecoilState } from "recoil";
+import {
+  useRecoilState,
+  useRecoilStateLoadable,
+  useResetRecoilState,
+} from "recoil";
 import dayjs from "dayjs";
 import { Center, Flex, Heading, ScaleFade, Text } from "@chakra-ui/react";
 import { timers, timerIds } from "../data/timer-data";
@@ -10,15 +14,16 @@ const audio = new Audio(alert);
 
 export function Timer({ id }: { id: string }) {
   const alarmInterval = React.useRef<number>();
+
   const [show, setShow] = React.useState(true);
 
-  const [timer, setTimer] = useRecoilState(timers(id));
+  const [timer, setTimer] = useRecoilStateLoadable(timers(id));
   const reset = useResetRecoilState(timers(id));
 
   const [_timerIds, setTimerIds] = useRecoilState(timerIds);
 
   const onClickPlay = () => {
-    if (timer.alarmOn) {
+    if (timer.contents?.alarmOn) {
       // Stop alarm
       audio.pause();
       clearInterval(alarmInterval.current);
@@ -28,9 +33,9 @@ export function Timer({ id }: { id: string }) {
       return;
     }
 
-    if (timer.isRunning) {
+    if (timer.contents?.isRunning) {
       setTimer(() => ({
-        ...timer,
+        ...timer.contents,
         isRunning: false,
       }));
       return;
@@ -38,14 +43,14 @@ export function Timer({ id }: { id: string }) {
 
     // The timer functionality is the final big piece of recoil stuff in this demo.
     const timeEnds = dayjs().add(
-      timer.currentMinutes || timer.minutes,
+      timer.contents?.currentMinutes || timer.contents.minutes,
       "minute"
     );
-    setTimer(() => ({ ...timer, isRunning: true, timeEnds }));
+    setTimer(() => ({ ...timer.contents, isRunning: true, timeEnds }));
   };
 
   React.useEffect(() => {
-    if (timer.alarmOn) {
+    if (timer.contents.alarmOn) {
       audio.play();
       alarmInterval.current = setInterval(() => {
         setShow((prev) => !prev);
@@ -53,16 +58,17 @@ export function Timer({ id }: { id: string }) {
       }, 200);
     }
 
-    if (!timer.alarmOn) {
+    if (!timer.contents?.alarmOn) {
       clearInterval(alarmInterval.current);
       audio.pause();
     }
 
     return () => {
-      clearInterval(alarmInterval.current);
+      clearInterval(alarmInterval?.current);
     };
-  }, [timer.alarmOn]);
+  }, [timer.contents?.alarmOn]);
 
+  console.log(timer?.contents);
   return (
     <ScaleFade initialScale={0.9} in={show}>
       <Flex
@@ -70,19 +76,19 @@ export function Timer({ id }: { id: string }) {
         height={"300px"}
         flexDirection={"column"}
         margin={2}
-        backgroundImage={`url('${tomatoTop}')`}
+        backgroundImage={`url('${timer.contents?.image || tomatoTop}')`}
         backgroundSize={"cover"}
         onClick={onClickPlay}
       >
         <Center color={"white"} flexDirection={"column"} m={"auto"}>
-          <Heading>{timer.role}</Heading>
-          <Text>{timer.goal}</Text>
-          <Heading>{timer.minutes} min</Heading>
-          <Heading>{timer.isRunning ? "■" : "▶"}</Heading>
-          {timer.isRunning && (
+          <Heading>{timer.contents?.role}</Heading>
+          <Text>{timer.contents?.goal}</Text>
+          <Heading>{timer.contents?.minutes} min</Heading>
+          <Heading>{timer.contents?.isRunning ? "■" : "▶"}</Heading>
+          {timer.contents?.isRunning && (
             <>
-              <Heading>{timer.currentMinutes?.toFixed(2)}</Heading>
-              <Text>ends at {timer?.timeEnds?.format("HH:mm")}</Text>
+              <Heading>{timer.contents?.currentMinutes?.toFixed(2)}</Heading>
+              <Text>ends at {timer.contents?.timeEnds?.format("HH:mm")}</Text>
             </>
           )}
         </Center>
