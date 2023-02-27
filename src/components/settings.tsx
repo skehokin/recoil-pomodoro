@@ -27,7 +27,7 @@ export function Settings() {
   // (note I'm using the read-only hook here - but this still subscribes to the atom.
   // I have an idea about not subscribing by building the default values into the selector
   // but it's not important for the talk)
-  // const lastTimer = useRecoilValue(asyncTimerSelector(ids[ids.length - 1]));
+  const lastTimer = useRecoilValue(timers(ids[ids.length - 1]));
 
   // The button runs setTimer with my initial values
   // it updates the new timer atom and adds the new timer to the list of timers
@@ -36,17 +36,15 @@ export function Settings() {
     const newTimer: Timer = {
       id: newTimerId,
       goal: "",
-      role: "work",
-      minutes: 25,
-      // ...(ids.length && lastTimer.role === "work"
-      //   ? {
-      //       role: "rest",
-      //       minutes: 5,
-      //     }
-      //   : {
-      //       role: "work",
-      //       minutes: 25,
-      //     }),
+      ...(ids.length && lastTimer.role === "work"
+        ? {
+            role: "rest",
+            minutes: 5,
+          }
+        : {
+            role: "work",
+            minutes: 25,
+          }),
     };
     setTimer(newTimer);
   };

@@ -39,7 +39,7 @@ const anAtom = atom({
   default: { id: "myId", minutes: 25, role: "work", goal: "" },
 });
 
-// For more complex state, or pieces of state that change frequently,
+// For more complex state, or related pieces of state that change independently,
 // we can create a set of similar atoms.
 // This is a function that creates an atom based on the id.
 export const timerAtom = memoize(({ id }: CreateTimerParams) =>
@@ -63,7 +63,8 @@ const timerFamily = atomFamily<Timer, string>({
 // Selectors
 
 // This is a selector, which allows us to supply derived state.
-// It returns the same type of value as an atom, so it can be used via the same hooks.
+// It returns the same type of value as an atom (RecoilState),
+// so it can be accessed via the same hooks.
 // This is a simple selector which only reads from the atom.
 
 // Using this selector:
