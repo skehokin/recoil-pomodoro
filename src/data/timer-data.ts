@@ -22,23 +22,31 @@ interface CreateTimerParams {
 // Recoil is an open-source state management library for React, which was created by Facebook devs.
 // The idea is that it would replace Redux or Context in your app
 
-// It's especially useful for managing state that is shared across multiple components,
-// when you don't want to cause a re-render of the entire app.
+// Why use it instead of Redux? setup is far less complicated, will less boilerplate
+// esp. for us: doesn't have model generator's weird bugs
+
+// - We use it at rex - for forms (we used to use context)
+// - for caching suggested values
+// - for fetching data in pm auth (experimental)
+
+// Recoil is preferred over context to limit rerenders when data is shared across the app.
+
+// Much of the benefit is in the hooks API, which is built to be simple and very similar to useState
+
+// Since I've run across it in our apps, I wanted to explore using it to understand the benefits and drawbacks
 
 // Atoms
 // Atoms are the basic building blocks of Recoil.
-// This is a single atom, which a component can subscribe to independently using hooks
-
-// e.g. const [timer, setTimer] = useRecoilState(timerAtom);
-// You can see the hook API is very similar to useState.
-
 const anAtom = atom({
   key: `single-timer`,
   default: { id: "myId", minutes: 25, role: "work", goal: "" },
 });
+// This is a single atom, which a component can subscribe to independently using hooks
+// e.g. const [timer, setTimer] = useRecoilState(timerAtom);
+// You can see the hook API is very similar to useState.
 
-// For more complex state, or related pieces of state that change independently,
-// we can create a set of similar atoms.
+// For related pieces of state that change independently,
+// We can create a set of similar atoms.
 // This is a function that creates an atom based on the id.
 export const timerAtom = memoize(({ id }: CreateTimerParams) =>
   atom({
@@ -102,8 +110,8 @@ export const timers = selectorFamily({
     ({ set, reset }, newTimerValue) => {
       if (newTimerValue instanceof DefaultValue) {
         // DefaultValue can be used to reset like so
-        // reset(timerFamily(id));
-        // reset(timerIds);
+        reset(timerFamily(id));
+        reset(timerIds);
         return;
       }
 
@@ -126,18 +134,26 @@ export const timers = selectorFamily({
 // In order to manage the timer functionality, I'm using an atomEffect
 // this is passed into the 'effects' array when creating the atomFamily.
 
-// ? this is probably going to interfere with itself
+// (TODO: stop this from interfering with itself?)
 let interval: number | undefined;
 
 //additionally passed to an atomEffect:
 // https://recoiljs.org/docs/guides/atom-effects/
 
+// pass in like so:
+
+// const timerFamily = atomFamily<Timer, string>({
+//   key: "timer",
+//   default: (id) => ({ id, minutes: 25, role: "work", goal: "" }),
+//   effects: [startTimerEffect],
+// });
+
 function startTimerEffect({ setSelf, onSet }) {
   // onSet subscribes to changes in the atom value but
   // doesn't run after its own setSelf is called.
   onSet((newValue, oldValue) => {
-    // since atomEffects run on every change to the atom.
-    // this pattern is more like the old componentDidUpdate than useEffect,
+    // since atomEffects run on every change to the atom,
+    // this pattern is more like the old componentDidUpdate than useEffect
     const justPaused =
       !newValue.isRunning &&
       !(oldValue instanceof DefaultValue) &&

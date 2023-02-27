@@ -32,6 +32,7 @@ export function Timer({ id }: { id: string }) {
       setTimer(() => ({
         ...timer,
         isRunning: false,
+        timeEnds: undefined,
       }));
       return;
     }
