@@ -13,8 +13,6 @@ export interface Timer {
   timeEnds?: dayjs.Dayjs;
   currentMinutes?: number;
   alarmOn?: boolean;
-  imageUrl?: string;
-  image?: Blob;
 }
 
 interface CreateTimerParams {
