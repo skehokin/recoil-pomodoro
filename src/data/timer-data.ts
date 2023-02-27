@@ -95,9 +95,6 @@ const imagesQuery = selectorFamily({
     const fruitUrl = await fetchFruitUrl();
     const imageBlob = await fetchFruitPicture(fruitUrl);
 
-    console.log(imageBlob);
-    console.log(imageBlob && URL.createObjectURL(imageBlob));
-
     return imageBlob ? URL.createObjectURL(imageBlob) : tomatoTop;
   },
 });
@@ -111,6 +108,7 @@ export const timers = selectorFamily({
       const image = get(imagesQuery(id));
       return { ...atom, image: image };
     },
+
   // set cannot be async, it turns out
   set:
     (id) =>
