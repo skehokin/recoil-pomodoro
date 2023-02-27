@@ -4,6 +4,7 @@ import { Box, Button, Center, Heading } from "@chakra-ui/react";
 
 import { Roles, timerIds, timers } from "../data/timer-data";
 import { TimerSettingsForm } from "./timer-settings-form";
+import { Suspense } from "react";
 
 // This is the settings section, where I can add new timers and edit existing ones
 // For the sake of the demo, it's quite separate from the individual timer display
@@ -68,11 +69,11 @@ export function Settings() {
           Settings
         </Heading>
       </Center>
-
-      {ids.map((id) => (
-        <TimerSettingsForm id={id} key={`timer-settings-${id}`} />
-      ))}
-
+      <Suspense fallback={"suspense, woo"}>
+        {ids.map((id) => (
+          <TimerSettingsForm id={id} key={`timer-settings-${id}`} />
+        ))}
+      </Suspense>
       <Center>
         <Button onClick={addTimer} bg={"gray.3å00"}>
           Add timer

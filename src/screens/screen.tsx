@@ -6,7 +6,7 @@ import { Timers } from "../components/timers";
 export function Screen() {
   return (
     <Flex width={"100%"}>
-      <Suspense fallback={"suspense, woo"}>
+      <Suspense fallback={"suspense wooo"}>
         <Settings />
         <Timers />
       </Suspense>

@@ -24,7 +24,10 @@ export const fetchFruitPicture = async (url) => {
 export const fetchFruitUrl = async () => {
   const allFruit = await fetch("https://api.predic8.de:443/shop/products/", {
     method: "GET",
-  }).then((res) => res.json());
-  return allFruit.products[Math.floor(Math.random() * allFruit.products.length)]
-    ?.product_url;
+  })
+    .then((res) => res.json())
+    .catch((e) => console.error(e));
+  return allFruit?.products?.[
+    Math.floor(Math.random() * allFruit.products.length)
+  ]?.product_url;
 };

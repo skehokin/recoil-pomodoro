@@ -3,6 +3,7 @@ import { timerIds } from "../data/timer-data";
 import { useRecoilValue } from "recoil";
 import { Box, Flex } from "@chakra-ui/react";
 import { Timer } from "./timer";
+import { Suspense } from "react";
 
 export function Timers() {
   const timers = useRecoilValue(timerIds);
@@ -10,9 +11,11 @@ export function Timers() {
   return (
     <Box>
       <Flex width={"1000px"} flexWrap={"wrap"}>
-        {timers.map((id) => (
-          <Timer id={id} key={`timer-${id}`} />
-        ))}
+        <Suspense fallback={"suspense, woo"}>
+          {timers.map((id) => (
+            <Timer id={id} key={`timer-${id}`} />
+          ))}
+        </Suspense>
       </Flex>
     </Box>
   );
